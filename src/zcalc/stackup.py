@@ -251,7 +251,21 @@ def load_stackup(path: str) -> Stackup:
             yaml_data = yaml.safe_load(f)
 
         materials = parse_materials(yaml_data.get("materials", {}))
-        parse_layers(yaml_data.get("layers", {}), materials)
+        layers = parse_layers(yaml_data.get("layers", {}), materials)
+
+        layers_by_name = {layer.name: layer for layer in layers}
+
+        fab = yaml_data.get("fabricator_limits", {})
+
+        return Stackup(
+            name=yaml_data.get("name", "Unknown stackup"),
+            layers=layers,
+            layers_by_name=layers_by_name,
+            materials=materials,
+            fab_min_trace_mm=float(fab.get("min_trace_mm", 0.1)),
+            fab_min_clearance_mm=float(fab.get("min_clearance_mm", 0.1)),
+            fab_max_copper_oz=float(fab.get("max_copper_oz", 2.0)),
+        )
 
     except InvalidMaterials as e:
         raise InvalidStackup(f"Error in Stackup Definition: {e}") from e
