@@ -4,8 +4,9 @@ ZCalc Stackup Logic
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Literal
+from typing import Any, Dict, List, Optional, Tuple, Literal
 
+import yaml
 
 # ========== Dataclasses and Enums ==========
 
@@ -91,3 +92,51 @@ class Stackup:
     fab_min_trace_mm: float
     fab_min_clearance_mm: float
     fab_max_copper_oz: float
+
+
+# =========== Utilities ==========
+
+
+def parse_materials(yaml_data: Any) -> Dict[str, Material]:
+    """
+    Constructs a mapping of a material name to a Material Data Class
+
+    Args:
+        yaml_data: YAML data corresponding to materials sections
+
+    Returns:
+        Mapping of material name to the Material and its material properties
+
+    """
+    materials_data = yaml_data.get("materials", {})
+    materials: Dict[str, Material] = {}
+
+    for name, md in materials_data.items():
+        kind = md["kind"]
+        mat = Material(
+            name=name, kind=kind, er=md.get("er"), conductivity=md.get("conductivity")
+        )
+
+        materials[name] = mat
+
+    return materials
+
+
+# =========== Stackup Manipulation ==========
+
+
+def load_stackup(path: str) -> Stackup:
+    """
+    Loads a stackup defintion file, parses it, and returns a Stackup dataclass
+    Args:
+        path: Path to stackup defintion
+
+    Returns:
+       Stackup representing the parsed stackup defintion
+    """
+
+    with open(path, "r") as f:
+        yaml_data = yaml.safe_load(f)
+
+    # Materials
+    matterials = parse_materials(yaml_data.get("materials", {}))

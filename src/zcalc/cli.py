@@ -7,6 +7,8 @@ import argparse
 import os
 from typing import List, Optional
 
+from zcalc import stackup
+
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     """Parses arguements from command line
@@ -63,3 +65,5 @@ def main(argv: Optional[List[str]] = None) -> None:
     args = parse_args(argv)
 
     os.makedirs(args.out, exist_ok=True)
+
+    stack = stackup.load_stackup(args.stackup)
