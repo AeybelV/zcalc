@@ -68,7 +68,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     os.makedirs(args.out, exist_ok=True)
 
     try:
-        stack = stackup.load_stackup(args.stackup)
+        stackup.load_stackup(args.stackup)
     except stackup.InvalidStackup as e:
         print(e)
         sys.exit(-1)

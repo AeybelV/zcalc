@@ -5,7 +5,7 @@ ZCalc Stackup Logic
 from dataclasses import dataclass
 from enum import Enum
 from types import NoneType
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Literal
+from typing import Any, Dict, List, Mapping, Optional, Literal
 
 import yaml
 
@@ -179,7 +179,7 @@ def load_stackup(path: str) -> Stackup:
         with open(path, "r") as f:
             yaml_data = yaml.safe_load(f)
 
-        materials = parse_materials(yaml_data.get("materials", {}))
+        parse_materials(yaml_data.get("materials", {}))
     except InvalidMaterials as e:
         raise InvalidStackup(f"Error in Stackup Definition: {e}") from e
     except yaml.YAMLError as e:
