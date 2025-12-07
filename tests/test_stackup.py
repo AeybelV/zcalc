@@ -2,8 +2,10 @@ import pytest
 
 import zcalc.stackup as stackup
 
+# =============== Materials Parsing ===============
 
-def test_load_materials():
+
+def test_parse_materials():
     """
     Tests parse_materials(): which takes in a YAML materials section and converts it
     to a mapping of the material name to its Material Properties
@@ -45,13 +47,13 @@ def test_load_materials():
     assert cu.kind == "copper"
 
 
-def test_load_bad_materials():
+def test_parse_materials_malformed():
     """
-    Tests parse_materials(): when it takes in a invalid materials section
+    Tests parse_materials with a Invalid Mapping for a Material and checks that it raises
+    the correct exception
     """
 
-    # ========== Invalid Mapping for a Material ==========
-    test_data1 = {
+    test_data = {
         "materials": {
             "FR4_CORE": None,
             "FR4_PREPEG": {"kind": "dielectric", "er": 4.4},
@@ -60,28 +62,59 @@ def test_load_bad_materials():
     }
 
     with pytest.raises(stackup.InvalidMaterials) as excinfo:
-        stackup.parse_materials(test_data1["materials"])
+        stackup.parse_materials(test_data["materials"])
 
     assert "must be a mapping" in str(excinfo.value).lower()
 
-    # ========== Missing required property ==========
 
-    test_data2 = {
+def test_parse_materials_missing_kind():
+    """
+    Tests parse_materials with a Missing Mapping for a Material and checks that it raises
+    the correct exception
+    """
+
+    test_data = {
         "materials": {
-            "FR4_CORE": {"er": 4.4},
-            "FR4_PREPEG": {"kind": "dielectric", "er": 4.4},
-            "COPPER_STD": {"kind": "copper"},
+            "FR4_CORE": {
+                # "kind" ommited
+                "er": 4.6
+            }
         }
     }
 
     with pytest.raises(stackup.InvalidMaterials) as excinfo:
-        stackup.parse_materials(test_data2["materials"])
+        stackup.parse_materials(test_data["materials"])
 
     assert "missing required field: 'kind'" in str(excinfo.value).lower()
 
-    # ========== Dielectric constant typing ==========
 
-    test_data3 = {
+def test_parse_materials_invalid_kind():
+    """
+    Tests parse_materials with a Invalid Kind for a Material and checks that it raises
+    the correct exception
+    """
+
+    test_data = {
+        "materials": {
+            "FR4_CORE": {
+                "kind": 123,
+            }
+        }
+    }
+
+    with pytest.raises(stackup.InvalidMaterials) as excinfo:
+        stackup.parse_materials(test_data["materials"])
+
+    assert "validation error" in str(excinfo.value).lower()
+
+
+def test_load_invalid_er():
+    """
+    Tests parse_materials with a Invalid ER for a Material and checks that it raises
+    the correct exception
+    """
+
+    test_data = {
         "materials": {
             "FR4_CORE": {"kind": "dielectric", "er": "foo"},
             "FR4_PREPEG": {"kind": "dielectric", "er": 4.4},
@@ -90,6 +123,6 @@ def test_load_bad_materials():
     }
 
     with pytest.raises(stackup.InvalidMaterials) as excinfo:
-        stackup.parse_materials(test_data3["materials"])
+        stackup.parse_materials(test_data["materials"])
 
-    assert "dielectric constant 'er' must be float" in str(excinfo.value).lower()
+    assert "input should be a valid number" in str(excinfo.value).lower()

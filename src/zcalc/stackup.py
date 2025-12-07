@@ -41,8 +41,7 @@ class LayerType(str, Enum):
     DIELECTRIC = "dielectric"
 
 
-@dataclass
-class Material:
+class Material(BaseModel):
     """
     Physical Material used in the stackup
 
@@ -57,19 +56,6 @@ class Material:
     kind: Literal["dielectric", "copper"]
     er: Optional[float] = None
     conductivity: Optional[float] = None
-
-    def __post_init__(self):
-        if self.er is not None and not isinstance(self.er, (int, float)):
-            raise InvalidMaterials(
-                f"Dielectric constant 'er' must be float or None, got {type(self.er).__name__}"
-            )
-
-        if self.conductivity is not None and not isinstance(
-            self.conductivity, (int, float)
-        ):
-            raise InvalidMaterials(
-                f"conductivity_s_per_m must be float or None, got {type(self.conductivity).__name__}"
-            )
 
 
 class StackLayer(BaseModel):
@@ -147,12 +133,16 @@ def parse_materials(materials_data: Any) -> Dict[str, Material]:
             )
 
         kind = md["kind"]
-        mat = Material(
-            name=name,
-            kind=kind,
-            er=md.get("er"),
-            conductivity=md.get("conductivity"),
-        )
+
+        try:
+            mat = Material(
+                name=name,
+                kind=kind,
+                er=md.get("er"),
+                conductivity=md.get("conductivity"),
+            )
+        except ValidationError as e:
+            raise InvalidMaterials(f"Material '{name}' validation error:\n'{e}'") from e
 
         materials[name] = mat
 
