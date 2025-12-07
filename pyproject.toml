@@ -14,7 +14,7 @@ authors = [
 ]
 license = { text = "GPL-3.0-only" }
 dependencies = [
-
+  "pyyaml"
 ]
 
 [project.optional-dependencies]
