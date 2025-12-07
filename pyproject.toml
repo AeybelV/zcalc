@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zcalc"
+version = "0.0.1"
+description = "Utility for calculating electrical characteristic for EDA"
+readme = "README.md"
+# What I've tested on
+requires-python = ">=3.10"
+authors = [
+  { name = "Aeybel Varghese", email = "aeybelvarghese@gmail.com" }
+]
+license = { text = "GPL-3.0-only" }
+dependencies = [
+
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]
+
+[project.scripts]
+zcalc = "zcalc.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
