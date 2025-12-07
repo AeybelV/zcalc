@@ -20,34 +20,34 @@ layers:
   - name: "L1_TOP"
     type: "copper" # copper | dielectric
     material: "COPPER_STD" # references materials.FR4_...
-    copper_thickness_um: 35 # geometry
+    thickness_um: 35 # geometry
 
   - name: "PP1"
     type: "dielectric"
     material: "FR4_PREPEG"
-    copper_thickness_um: 210.4
+    thickness_um: 210.4
 
   - name: "L2"
     type: "copper"
     material: "COPPER_STD"
-    copper_thickness_um: 15.2
+    thickness_um: 15.2
 
   - name: "CORE"
     type: "dielectric"
     material: "FR4_CORE"
-    copper_thickness_um: 1065
+    thickness_um: 1065
 
   - name: "L3"
     type: "copper"
     material: "COPPER_STD"
-    copper_thickness_um: 15.2
+    thickness_um: 15.2
 
   - name: "PP2"
     type: "dielectric"
     material: "FR4_PREPEG"
-    copper_thickness_um: 210.4
+    thickness_um: 210.4
 
   - name: "L4_BOT"
     type: "copper"
     material: "COPPER_STD"
-    copper_thickness_um: 35
+    thickness_um: 35
