@@ -4,9 +4,21 @@ ZCalc Stackup Logic
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Literal
+from types import NoneType
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Literal
 
 import yaml
+
+# ========== Exceptions ==========
+
+
+class InvalidStackup(Exception):
+    """Raised when the Stackup defintion YAML is invalid."""
+
+
+class InvalidMaterials(Exception):
+    """Raised when the materials section in YAML is invalid."""
+
 
 # ========== Dataclasses and Enums ==========
 
@@ -40,6 +52,19 @@ class Material:
     kind: Literal["dielectric", "copper"]
     er: Optional[float] = None
     conductivity: Optional[float] = None
+
+    def __post_init__(self):
+        if self.er is not None and not isinstance(self.er, (int, float)):
+            raise InvalidMaterials(
+                f"Dielectric constant 'er' must be float or None, got {type(self.er).__name__}"
+            )
+
+        if self.conductivity is not None and not isinstance(
+            self.conductivity, (int, float)
+        ):
+            raise InvalidMaterials(
+                f"conductivity_s_per_m must be float or None, got {type(self.conductivity).__name__}"
+            )
 
 
 @dataclass
@@ -97,24 +122,37 @@ class Stackup:
 # =========== Utilities ==========
 
 
-def parse_materials(yaml_data: Any) -> Dict[str, Material]:
+def parse_materials(materials_data: Any) -> Dict[str, Material]:
     """
     Constructs a mapping of a material name to a Material Data Class
 
     Args:
-        yaml_data: YAML data corresponding to materials sections
+        materials_data: YAML data corresponding to materials sections
 
     Returns:
         Mapping of material name to the Material and its material properties
 
     """
-    materials_data = yaml_data.get("materials", {})
+    if not isinstance(materials_data, Mapping):
+        raise InvalidMaterials("`materials` must be a mapping (dict) in YAML.")
+
     materials: Dict[str, Material] = {}
 
     for name, md in materials_data.items():
+        if not isinstance(md, Mapping) or isinstance(md, NoneType):
+            raise InvalidMaterials(f"Material '{name}' must be a mapping")
+
+        if "kind" not in md:
+            raise InvalidMaterials(
+                f"Material '{name}' is missing required field: 'kind'."
+            )
+
         kind = md["kind"]
         mat = Material(
-            name=name, kind=kind, er=md.get("er"), conductivity=md.get("conductivity")
+            name=name,
+            kind=kind,
+            er=md.get("er"),
+            conductivity=md.get("conductivity"),
         )
 
         materials[name] = mat
@@ -135,8 +173,16 @@ def load_stackup(path: str) -> Stackup:
        Stackup representing the parsed stackup defintion
     """
 
-    with open(path, "r") as f:
-        yaml_data = yaml.safe_load(f)
+    yaml_data = None
+
+    try:
+        with open(path, "r") as f:
+            yaml_data = yaml.safe_load(f)
+
+        materials = parse_materials(yaml_data.get("materials", {}))
+    except InvalidMaterials as e:
+        raise InvalidStackup(f"Error in Stackup Definition: {e}") from e
+    except yaml.YAMLError as e:
+        print("Invalid Stackup YAML:", e)
 
     # Materials
-    matterials = parse_materials(yaml_data.get("materials", {}))

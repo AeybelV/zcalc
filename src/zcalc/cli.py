@@ -5,6 +5,7 @@ zcalc CLI
 
 import argparse
 import os
+import sys
 from typing import List, Optional
 
 from zcalc import stackup
@@ -66,4 +67,10 @@ def main(argv: Optional[List[str]] = None) -> None:
 
     os.makedirs(args.out, exist_ok=True)
 
-    stack = stackup.load_stackup(args.stackup)
+    try:
+        stack = stackup.load_stackup(args.stackup)
+    except stackup.InvalidStackup as e:
+        print(e)
+        sys.exit(-1)
+
+    print("Goodbye!")
