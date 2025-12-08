@@ -8,7 +8,7 @@ import os
 import sys
 from typing import List, Optional
 
-from zcalc import stackup
+from zcalc import stackup, nets
 
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
@@ -68,9 +68,14 @@ def main(argv: Optional[List[str]] = None) -> None:
     os.makedirs(args.out, exist_ok=True)
 
     try:
-        s = stackup.load_stackup(args.stackup)
-        print(s)
-    except stackup.InvalidStackup as e:
+        stackup_defintion = stackup.load_stackup(args.stackup)
+        netlist = nets.load_nets(args.nets)
+
+        print()
+        print(stackup_defintion)
+        print()
+        print(netlist)
+    except (stackup.InvalidStackup, nets.InvalidNetList) as e:
         print(e)
         sys.exit(-1)
 

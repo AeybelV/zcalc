@@ -3,11 +3,22 @@ Bluh
 
 """
 
-from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Literal, List
+from types import NoneType
+from typing import Optional, List
 
-from pydantic import BaseModel
+import yaml
+from pydantic import BaseModel, ValidationError
+
+
+# ========== Exceptions ==========
+
+
+class InvalidNetList(Exception):
+    """Raised when the Nets List defintion YAML is invalid."""
+
+
+# ========== Dataclasses ==========
 
 
 class Geometry(str, Enum):
@@ -95,3 +106,67 @@ class NetSpec(BaseModel):
     ref_plane_below: Optional[str] = None
 
     notes: str = ""
+
+
+# ========== Net Logic ==========
+
+
+def load_nets(path: str) -> List[NetSpec]:
+    """
+    Loads and parses a Nets List Defintion File
+
+    Args:
+        path: Path to Net List
+
+    Returns:
+        Python list of NetSpecs
+    """
+
+    # with open()
+    nets: List[NetSpec] = []
+    yaml_data = None
+    try:
+        with open(path, "r") as f:
+            yaml_data = yaml.safe_load(f)
+            if isinstance(yaml_data, NoneType):
+                raise InvalidNetList(f"Malformed Net List Defintion {path}")
+
+        nets_data = yaml_data.get("nets", [])
+
+        for nd in nets_data:
+            net_name = nd["name"]
+            geom_str = nd.get("geometry", "auto")
+            geom = Geometry(geom_str)
+
+            try:
+                net = NetSpec(
+                    name=net_name,
+                    layer=nd["layer"],
+                    role=nd["role"],
+                    geometry=geom,
+                    z0_target_ohm=nd.get("z0_target_ohm"),
+                    zdiff_target_ohm=nd.get("zdiff_target_ohm"),
+                    i_dc_a=nd.get("i_dc_a"),
+                    temp_rise_c=nd.get("temp_rise_c"),
+                    length_mm=nd.get("length_mm"),
+                    voltage_v=nd.get("voltage_v"),
+                    min_width_mm=nd.get("min_width_mm"),
+                    preferred_clearance_mm=nd.get("preferred_clearance_mm"),
+                    ref_plane_above=nd.get("ref_plane_above"),
+                    ref_plane_below=nd.get("ref_plane_below"),
+                    notes=nd.get("notes", ""),
+                )
+
+                nets.append(net)
+            except ValidationError as e:
+                raise InvalidNetList(
+                    f"Netlist validation error for net '{net_name}':\n'{e}'"
+                ) from e
+
+        return nets
+    except FileNotFoundError as e:
+        raise InvalidNetList(f"Net List definition {path}, not found") from e
+    except yaml.YAMLError as e:
+        print("Invalid Stackup YAML:", e)
+
+    return nets

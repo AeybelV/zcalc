@@ -249,6 +249,8 @@ def load_stackup(path: str) -> Stackup:
     try:
         with open(path, "r") as f:
             yaml_data = yaml.safe_load(f)
+            if isinstance(yaml_data, NoneType):
+                raise InvalidStackup(f"Malformed Stackup Defintion {path}")
 
         materials = parse_materials(yaml_data.get("materials", {}))
         layers = parse_layers(yaml_data.get("layers", {}), materials)
@@ -271,6 +273,8 @@ def load_stackup(path: str) -> Stackup:
         raise InvalidStackup(f"Error in Stackup Definition: {e}") from e
     except InvalidLayers as e:
         raise InvalidStackup(f"Error in Stackup Definition: {e}") from e
+    except FileNotFoundError as e:
+        raise InvalidStackup(f"Stackup definition {path}, not found") from e
     except yaml.YAMLError as e:
         print("Invalid Stackup YAML:", e)
 

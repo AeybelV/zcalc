@@ -1,0 +1,52 @@
+nets:
+  - name: "3V3"
+    layer: "L3"
+    role: "power"
+    geometry: "auto"
+    i_dc_a: 1.2
+    temp_rise_c: 10
+    length_mm: 50
+    voltage_v: 3.3
+    min_width_mm: 0.25
+    preferred_clearance_mm: 0.25
+    notes: "Main 3V3 distribution"
+
+  - name: "SDIO_CLK"
+    layer: "L1_TOP"
+    role: "signal"
+    geometry: "microstrip"
+    z0_target_ohm: 50
+    ref_plane_below: "L2"
+    length_mm: 40
+    notes: "SD card clock"
+
+  - name: "USB_D_P"
+    layer: "L1_TOP"
+    role: "diff_signal"
+    geometry: "microstrip"
+    z0_target_ohm: 45
+    zdiff_target_ohm: 90
+    ref_plane_below: "L2"
+    length_mm: 60
+    preferred_clearance_mm: 0.15
+    notes: "USB HS diff pair (P)"
+
+  - name: "USB_D_N"
+    layer: "L1_TOP"
+    role: "diff_signal"
+    geometry: "microstrip"
+    z0_target_ohm: 45
+    zdiff_target_ohm: 90
+    ref_plane_below: "L2"
+    length_mm: 60
+    preferred_clearance_mm: 0.15
+    notes: "USB HS diff pair (N)"
+
+  - name: "SPI_SCK"
+    layer: "L1_TOP"
+    role: "signal"
+    geometry: "microstrip"
+    z0_target_ohm: 50
+    ref_plane_below: "L2"
+    length_mm: 30
+    notes: "SPI clock to a SPI peripheral"
